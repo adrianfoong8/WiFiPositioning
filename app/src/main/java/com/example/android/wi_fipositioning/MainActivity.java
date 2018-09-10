@@ -1,16 +1,12 @@
 package com.example.android.wi_fipositioning;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.indooratlas.android.sdk.IALocation;
 import com.indooratlas.android.sdk.IALocationListener;
@@ -30,7 +26,9 @@ public class MainActivity extends AppCompatActivity
     static final String FASTEST_INTERVAL = "fastestInterval";
     static final String SHORTEST_DISPLACEMENT = "shortestDisplacement";
     Integer mCurrentFloorLevel = null;
+    String mCurrentLocation = null;
     TextView mUiFloorLevel;
+    TextView mUiLocation;
     private IALocationManager mLocationManager;
     private TextView mLog;
     private ScrollView mScrollView;
@@ -54,6 +52,7 @@ public class MainActivity extends AppCompatActivity
         mLocationManager = IALocationManager.create(this);
 
         mUiFloorLevel = (TextView) findViewById(R.id.text_view_floor_level);
+        mUiLocation = (TextView) findViewById(R.id.text_view_location);
 
         updateUi();
 
@@ -110,16 +109,15 @@ public class MainActivity extends AppCompatActivity
         mLocationManager.removeLocationUpdates(MainActivity.this);
         mLocationManager.requestLocationUpdates(request, MainActivity.this);
 
-        log("requestLocationUpdates");
+        log("Search started.");
+
+        setText(mUiFloorLevel, "Searching...");
+        setText(mUiLocation, "Searching...");
     }
 
     public void removeUpdates(View view) {
-        log("removeLocationUpdates");
+        log("Search stopped.");
         mLocationManager.removeLocationUpdates(this);
-    }
-
-    public void setLocation(View view) {
-        askLocation();
     }
 
     @Override
@@ -129,6 +127,11 @@ public class MainActivity extends AppCompatActivity
                 location.getFloorCertainty()));
 
         mCurrentFloorLevel = location.hasFloorLevel() ? location.getFloorLevel() : null;
+
+//        if(location.getLatitude()>=4.583449){
+//            if(location.getLongitude()>=101.094416)
+//        }
+
         updateUi();
     }
 
@@ -201,37 +204,6 @@ public class MainActivity extends AppCompatActivity
         mScrollView.smoothScrollBy(0, mLog.getBottom());
     }
 
-    /**
-     * Shows AlertDialog with text entry widget. This example assumes that input is a floor plan
-     * identifier, i.e. UUID which is displayed in IndoorAtlas developer site next to floor plan's
-     * map. See Developer documents for more info: http://docs.indooratlas.com
-     */
-    private void askLocation() {
-
-        final EditText editText = new EditText(this);
-
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.dialog_set_location_title)
-                .setView(editText)
-                .setCancelable(true)
-                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            final String text = editText.getText().toString();
-                            final IARegion region = IARegion.floorPlan(text);
-                            mLocationManager.setLocation(IALocation.from(region));
-                            log("setLocation: " + text);
-                        } catch (Exception e) {
-                            Toast.makeText(MainActivity.this,
-                                    getString(R.string.error_could_not_set_location, e.toString()),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }).show();
-
-    }
-
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putLong(FASTEST_INTERVAL, mFastestInterval);
@@ -252,6 +224,11 @@ public class MainActivity extends AppCompatActivity
 
     void updateUi() {
         String level = "";
+        String location = "";
+        if (mCurrentLocation != null) {
+            location = mCurrentLocation.toString();
+        }
+        setText(mUiLocation, location);
         if (mCurrentFloorLevel != null) {
             level = mCurrentFloorLevel.toString();
         }
