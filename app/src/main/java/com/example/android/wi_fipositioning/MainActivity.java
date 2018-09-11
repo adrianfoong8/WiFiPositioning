@@ -27,8 +27,10 @@ public class MainActivity extends AppCompatActivity
     static final String SHORTEST_DISPLACEMENT = "shortestDisplacement";
     Integer mCurrentFloorLevel = null;
     String mCurrentLocation = null;
+    double mCurrentCertainty = 0.0;
     TextView mUiFloorLevel;
     TextView mUiLocation;
+    TextView mUiCertainty;
     private IALocationManager mLocationManager;
     private TextView mLog;
     private ScrollView mScrollView;
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity
 
         mUiFloorLevel = (TextView) findViewById(R.id.text_view_floor_level);
         mUiLocation = (TextView) findViewById(R.id.text_view_location);
+        mUiCertainty = (TextView) findViewById(R.id.text_view_certainty);
 
         updateUi();
 
@@ -113,6 +116,7 @@ public class MainActivity extends AppCompatActivity
 
         setText(mUiFloorLevel, "Searching...");
         setText(mUiLocation, "Searching...");
+        setText(mUiCertainty, "0.0");
     }
 
     public void removeUpdates(View view) {
@@ -127,11 +131,35 @@ public class MainActivity extends AppCompatActivity
                 location.getFloorCertainty()));
 
         mCurrentFloorLevel = location.hasFloorLevel() ? location.getFloorLevel() : null;
+        //mCurrentLocation = (String.format(Locale.US, "Lat: %f,%f", location.getLatitude(), location.getLongitude()));
 
-//        if(location.getLatitude()>=4.583449){
-//            if(location.getLongitude()>=101.094416)
-//        }
+        if ((location.getLatitude() >= 4.583344 && location.getLatitude() <= 4.583449) && (location.getLongitude() >= 101.094404 && location.getLongitude() <= 101.094462)) {
+            mCurrentLocation = "CSL4";
+        } else if ((location.getLatitude() >= 4.583339 && location.getLatitude() <= 4.583446) && (location.getLongitude() >= 101.094464 && location.getLongitude() <= 101.094452)) {
+            mCurrentLocation = "CSL3";
+        } else if ((location.getLatitude() >= 4.583334 && location.getLatitude() <= 4.583439) && (location.getLongitude() >= 101.094519 && location.getLongitude() <= 101.094577)) {
+            mCurrentLocation = "CSL2";
+        } else if ((location.getLatitude() >= 4.583329 && location.getLatitude() <= 4.583435) && (location.getLongitude() >= 101.094579 && location.getLongitude() <= 101.094637)) {
+            mCurrentLocation = "DELTA LAB";
+        } else if ((location.getLatitude() >= 4.583314 && location.getLatitude() <= 4.583424) && (location.getLongitude() >= 101.094704 && location.getLongitude() <= 101.094779)) {
+            mCurrentLocation = "LR1";
+        } else if ((location.getLatitude() >= 4.583307 && location.getLatitude() <= 4.583416) && (location.getLongitude() >= 101.094780 && location.getLongitude() <= 101.094857)) {
+            mCurrentLocation = "LR7";
+        } else if ((location.getLatitude() >= 4.583487 && location.getLatitude() <= 4.583593) && (location.getLongitude() >= 101.094451 && location.getLongitude() <= 101.094516)) {
+            mCurrentLocation = "EL4";
+        } else if ((location.getLatitude() >= 4.583480 && location.getLatitude() <= 4.583588) && (location.getLongitude() >= 101.094517 && location.getLongitude() <= 101.094582)) {
+            mCurrentLocation = "EL3";
+        } else if ((location.getLatitude() >= 4.583474 && location.getLatitude() <= 4.583581) && (location.getLongitude() >= 101.094582 && location.getLongitude() <= 101.094646)) {
+            mCurrentLocation = "EL2";
+        } else if ((location.getLatitude() >= 4.583468 && location.getLatitude() <= 4.583576) && (location.getLongitude() >= 101.094648 && location.getLongitude() <= 101.094714)) {
+            mCurrentLocation = "EL1";
+        } else if ((location.getLatitude() >= 4.583463 && location.getLatitude() <= 4.583570) && (location.getLongitude() >= 101.094713 && location.getLongitude() <= 101.094778)) {
+            mCurrentLocation = "STUDENT LOUNGE";
+        } else if ((location.getLatitude() >= 4.583455 && location.getLatitude() <= 4.583563) && (location.getLongitude() >= 101.094780 && location.getLongitude() <= 101.094843)) {
+            mCurrentLocation = "EXAM DIVISION";
+        }
 
+        mCurrentCertainty = location.getAccuracy();
         updateUi();
     }
 
@@ -225,6 +253,7 @@ public class MainActivity extends AppCompatActivity
     void updateUi() {
         String level = "";
         String location = "";
+        String certainty = "";
         if (mCurrentLocation != null) {
             location = mCurrentLocation.toString();
         }
@@ -233,6 +262,10 @@ public class MainActivity extends AppCompatActivity
             level = mCurrentFloorLevel.toString();
         }
         setText(mUiFloorLevel, level);
+        if (mCurrentCertainty != 0.0) {
+            certainty = (String.format(Locale.US, "%.2f", mCurrentCertainty));
+        }
+        setText(mUiCertainty, certainty);
     }
 
     void setText(@NonNull TextView view, @NonNull String text) {
