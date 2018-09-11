@@ -32,7 +32,8 @@
             android:name="com.indooratlas.android.sdk.API_SECRET"
             android:value="4nJIzaiN9QI1ULe/0x86/XWaGlpdDKaDZtYwPSyxZNeCiXz/heDTrl3rhQNgXEVCB8SZoQqCnq2hEJQSsSqvnqAt/jMIvAwkNsHpT3Bvtvz5AUE3Rfm+ArBtVxWaBA==" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
