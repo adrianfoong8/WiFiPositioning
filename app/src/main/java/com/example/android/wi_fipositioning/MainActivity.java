@@ -19,26 +19,35 @@ import java.util.Locale;
 /**
  * Simple example that demonstrates basic interaction with {@link IALocationManager}.
  */
-//@SdkExample(description = R.string.example_simple_description)
 public class MainActivity extends AppCompatActivity
         implements IALocationListener, IARegion.Listener {
 
     static final String FASTEST_INTERVAL = "fastestInterval";
     static final String SHORTEST_DISPLACEMENT = "shortestDisplacement";
-    Integer mCurrentFloorLevel = null;
-    String mCurrentLocation = null;
-    double mCurrentCertainty = 0.0;
-    TextView mUiFloorLevel;
-    TextView mUiLocation;
-    TextView mUiCertainty;
+
     private IALocationManager mLocationManager;
+
     private TextView mLog;
     private ScrollView mScrollView;
     private long mRequestStartTime;
+
     private long mFastestInterval = -1L;
     private float mShortestDisplacement = -1f;
 
-    @SuppressWarnings("unchecked")
+    private String mCurrentStatus = null;
+    private String mCurrentQuality = null;
+    private String mCurrentLat = null;
+    private String mCurrentLong = null;
+    private String mCurrentLocation = null;
+    private Integer mCurrentFloorLevel = null;
+
+    private TextView mUiStatus;
+    private TextView mUiQuality;
+    private TextView mUiLat;
+    private TextView mUiLong;
+    private TextView mUiLocation;
+    private TextView mUiFloorLevel;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,19 +58,24 @@ public class MainActivity extends AppCompatActivity
         }
 
         setContentView(R.layout.activity_main);
-        mLog = (TextView) findViewById(R.id.text);
-        mScrollView = (ScrollView) findViewById(R.id.scroller);
         mLocationManager = IALocationManager.create(this);
 
-        mUiFloorLevel = (TextView) findViewById(R.id.text_view_floor_level);
+        mLog = (TextView) findViewById(R.id.text);
+        mScrollView = (ScrollView) findViewById(R.id.scroller);
+
+        mUiStatus = (TextView) findViewById(R.id.text_view_status);
+        mUiQuality = (TextView) findViewById(R.id.text_view_calibration_quality);
+        mUiLat = (TextView) findViewById(R.id.text_view_lat);
+        mUiLong = (TextView) findViewById(R.id.text_view_long);
         mUiLocation = (TextView) findViewById(R.id.text_view_location);
-        mUiCertainty = (TextView) findViewById(R.id.text_view_certainty);
+        mUiFloorLevel = (TextView) findViewById(R.id.text_view_floor_level);
 
-        updateUi();
-
-        // Register long click for sharing traceId
-//        ExampleUtils.shareTraceId(mLog, SimpleActivity.this, mLocationManager);
-
+        mCurrentStatus = "N/A";
+        mCurrentQuality = "N/A";
+        mCurrentLat = "0.0";
+        mCurrentLong = "0.0";
+        mCurrentLocation = "N/A";
+        mCurrentFloorLevel = 0;
     }
 
     @Override
@@ -82,57 +96,32 @@ public class MainActivity extends AppCompatActivity
         mLocationManager.unregisterRegionListener(this);
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.menu_simple, menu);
-//        return super.onCreateOptionsMenu(menu);
-//    }
-
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        final int id = item.getItemId();
-//        switch (id) {
-//            case R.id.action_clear:
-//                mLog.setText(null);
-//                return true;
-//            case R.id.action_share:
-//                shareLog();
-//                return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
-
     public void requestUpdates(View view) {
+        mCurrentStatus = "Searching...";
+        mCurrentQuality = "Searching...";
+        mCurrentLat = "0.0";
+        mCurrentLong = "0.0";
+        mCurrentLocation = "Searching...";
+        mCurrentFloorLevel = 0;
+
         mRequestStartTime = SystemClock.elapsedRealtime();
-        IALocationRequest request = IALocationRequest.create();
-
-        mFastestInterval = -1L;
-        mShortestDisplacement = -1f;
-
-        mLocationManager.removeLocationUpdates(MainActivity.this);
-        mLocationManager.requestLocationUpdates(request, MainActivity.this);
-
-        log("Search started.");
-
-        setText(mUiFloorLevel, "Searching...");
-        setText(mUiLocation, "Searching...");
-        setText(mUiCertainty, "0.0");
+        mLocationManager.requestLocationUpdates(IALocationRequest.create(), MainActivity.this);
     }
 
     public void removeUpdates(View view) {
-        log("Search stopped.");
         mLocationManager.removeLocationUpdates(this);
     }
 
     @Override
     public void onLocationChanged(IALocation location) {
+        log("Working");
         log(String.format(Locale.US, "%f,%f, accuracy: %.2f, certainty: %.2f",
                 location.getLatitude(), location.getLongitude(), location.getAccuracy(),
                 location.getFloorCertainty()));
 
-        mCurrentFloorLevel = location.hasFloorLevel() ? location.getFloorLevel() : null;
+        mCurrentLat = (String.format(Locale.US, "%f", location.getLatitude()));
+        mCurrentLong = (String.format(Locale.US, "%f", location.getLongitude()));
         mCurrentLocation = (String.format(Locale.US, "Lat: %f,%f", location.getLatitude(), location.getLongitude()));
-
         if (location.getAccuracy() >= 0.5) {
             if ((location.getLatitude() >= 4.583344 && location.getLatitude() <= 4.583449) && (location.getLongitude() >= 101.094404 && location.getLongitude() <= 101.094462)) {
                 mCurrentLocation = "CSL4";
@@ -160,8 +149,7 @@ public class MainActivity extends AppCompatActivity
                 mCurrentLocation = "EXAM DIVISION";
             }
         }
-
-        mCurrentCertainty = location.getAccuracy();
+        mCurrentFloorLevel = location.hasFloorLevel() ? location.getFloorLevel() : null;
         updateUi();
     }
 
@@ -181,30 +169,31 @@ public class MainActivity extends AppCompatActivity
                         quality = "Excellent";
                         break;
                 }
-                log("Calibration change. Quality: " + quality);
+                mCurrentQuality = quality;
                 break;
             case IALocationManager.STATUS_AVAILABLE:
-                log("onStatusChanged: Available");
+                mCurrentStatus = "Available";
                 break;
             case IALocationManager.STATUS_LIMITED:
-                log("onStatusChanged: Limited");
+                mCurrentStatus = "Limited";
                 break;
             case IALocationManager.STATUS_OUT_OF_SERVICE:
-                log("onStatusChanged: Out of service");
+                mCurrentStatus = "Out of service";
                 break;
             case IALocationManager.STATUS_TEMPORARILY_UNAVAILABLE:
-                log("onStatusChanged: Temporarily unavailable");
+                mCurrentStatus = "Temporarily unavailable";
         }
+        updateUi();
     }
 
     @Override
     public void onEnterRegion(IARegion region) {
-        log("onEnterRegion: " + regionType(region.getType()) + ", " + region.getId());
+//        log("onEnterRegion: " + regionType(region.getType()) + ", " + region.getId());
     }
 
     @Override
     public void onExitRegion(IARegion region) {
-        log("onExitRegion: " + regionType(region.getType()) + ", " + region.getId());
+//        log("onExitRegion: " + regionType(region.getType()) + ", " + region.getId());
     }
 
     /**
@@ -221,17 +210,6 @@ public class MainActivity extends AppCompatActivity
             default:
                 return Integer.toString(type);
         }
-    }
-
-    /**
-     * Append message into log prefixing with duration since start of location requests.
-     */
-    private void log(String msg) {
-        double duration = mRequestStartTime != 0
-                ? (SystemClock.elapsedRealtime() - mRequestStartTime) / 1e3
-                : 0d;
-        mLog.append(String.format(Locale.US, "\n[%06.2f]: %s", duration, msg));
-        mScrollView.smoothScrollBy(0, mLog.getBottom());
     }
 
     @Override
@@ -253,9 +231,29 @@ public class MainActivity extends AppCompatActivity
 //    }
 
     void updateUi() {
-        String level = "";
+        String status = "";
+        String quality = "";
+        String lat = "";
+        String lon = "";
         String location = "";
-        String certainty = "";
+        String level = "";
+
+        if (mCurrentStatus != null) {
+            status = mCurrentStatus.toString();
+        }
+        setText(mUiStatus, status);
+        if (mCurrentQuality != null) {
+            quality = mCurrentQuality.toString();
+        }
+        setText(mUiQuality, quality);
+        if (mCurrentLat != null) {
+            lat = mCurrentLat.toString();
+        }
+        setText(mUiLat, lat);
+        if (mCurrentLong != null) {
+            lon = mCurrentLong.toString();
+        }
+        setText(mUiLong, lon);
         if (mCurrentLocation != null) {
             location = mCurrentLocation.toString();
         }
@@ -264,15 +262,19 @@ public class MainActivity extends AppCompatActivity
             level = mCurrentFloorLevel.toString();
         }
         setText(mUiFloorLevel, level);
-        if (mCurrentCertainty != 0.0) {
-            certainty = (String.format(Locale.US, "%.2f", mCurrentCertainty));
-        }
-        setText(mUiCertainty, certainty);
     }
 
     void setText(@NonNull TextView view, @NonNull String text) {
         if (!view.getText().toString().equals(text)) {
             view.setText(text);
         }
+    }
+
+    private void log(String msg) {
+        double duration = mRequestStartTime != 0
+                ? (SystemClock.elapsedRealtime() - mRequestStartTime) / 1e3
+                : 0d;
+        mLog.append(String.format(Locale.US, "\n[%06.2f]: %s", duration, msg));
+        mScrollView.smoothScrollBy(0, mLog.getBottom());
     }
 }
