@@ -1,11 +1,9 @@
 package com.example.android.wi_fipositioning;
 
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.indooratlas.android.sdk.IALocation;
@@ -16,9 +14,6 @@ import com.indooratlas.android.sdk.IARegion;
 
 import java.util.Locale;
 
-/**
- * Simple example that demonstrates basic interaction with {@link IALocationManager}.
- */
 public class MainActivity extends AppCompatActivity
         implements IALocationListener, IARegion.Listener {
 
@@ -26,10 +21,6 @@ public class MainActivity extends AppCompatActivity
     static final String SHORTEST_DISPLACEMENT = "shortestDisplacement";
 
     private IALocationManager mLocationManager;
-
-    private TextView mLog;
-    private ScrollView mScrollView;
-    private long mRequestStartTime;
 
     private long mFastestInterval = -1L;
     private float mShortestDisplacement = -1f;
@@ -60,9 +51,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         mLocationManager = IALocationManager.create(this);
 
-        mLog = (TextView) findViewById(R.id.text);
-        mScrollView = (ScrollView) findViewById(R.id.scroller);
-
         mUiStatus = (TextView) findViewById(R.id.text_view_status);
         mUiQuality = (TextView) findViewById(R.id.text_view_calibration_quality);
         mUiLat = (TextView) findViewById(R.id.text_view_lat);
@@ -70,12 +58,13 @@ public class MainActivity extends AppCompatActivity
         mUiLocation = (TextView) findViewById(R.id.text_view_location);
         mUiFloorLevel = (TextView) findViewById(R.id.text_view_floor_level);
 
-        mCurrentStatus = "N/A";
-        mCurrentQuality = "N/A";
+        mCurrentStatus = "-";
+        mCurrentQuality = "-";
         mCurrentLat = "0.0";
         mCurrentLong = "0.0";
-        mCurrentLocation = "N/A";
+        mCurrentLocation = "-";
         mCurrentFloorLevel = 0;
+        updateUi();
     }
 
     @Override
@@ -97,14 +86,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void requestUpdates(View view) {
-        mCurrentStatus = "Searching...";
-        mCurrentQuality = "Searching...";
-        mCurrentLat = "0.0";
-        mCurrentLong = "0.0";
-        mCurrentLocation = "Searching...";
-        mCurrentFloorLevel = 0;
-
-        mRequestStartTime = SystemClock.elapsedRealtime();
         mLocationManager.requestLocationUpdates(IALocationRequest.create(), MainActivity.this);
     }
 
@@ -114,40 +95,32 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLocationChanged(IALocation location) {
-        log("Working");
-        log(String.format(Locale.US, "%f,%f, accuracy: %.2f, certainty: %.2f",
-                location.getLatitude(), location.getLongitude(), location.getAccuracy(),
-                location.getFloorCertainty()));
-
         mCurrentLat = (String.format(Locale.US, "%f", location.getLatitude()));
         mCurrentLong = (String.format(Locale.US, "%f", location.getLongitude()));
-        mCurrentLocation = (String.format(Locale.US, "Lat: %f,%f", location.getLatitude(), location.getLongitude()));
-        if (location.getAccuracy() >= 0.5) {
-            if ((location.getLatitude() >= 4.583344 && location.getLatitude() <= 4.583449) && (location.getLongitude() >= 101.094404 && location.getLongitude() <= 101.094462)) {
-                mCurrentLocation = "CSL4";
-            } else if ((location.getLatitude() >= 4.583339 && location.getLatitude() <= 4.583446) && (location.getLongitude() >= 101.094464 && location.getLongitude() <= 101.094452)) {
-                mCurrentLocation = "CSL3";
-            } else if ((location.getLatitude() >= 4.583334 && location.getLatitude() <= 4.583439) && (location.getLongitude() >= 101.094519 && location.getLongitude() <= 101.094577)) {
-                mCurrentLocation = "CSL2";
-            } else if ((location.getLatitude() >= 4.583329 && location.getLatitude() <= 4.583435) && (location.getLongitude() >= 101.094579 && location.getLongitude() <= 101.094637)) {
-                mCurrentLocation = "DELTA LAB";
-            } else if ((location.getLatitude() >= 4.583314 && location.getLatitude() <= 4.583424) && (location.getLongitude() >= 101.094704 && location.getLongitude() <= 101.094779)) {
-                mCurrentLocation = "LR1";
-            } else if ((location.getLatitude() >= 4.583307 && location.getLatitude() <= 4.583416) && (location.getLongitude() >= 101.094780 && location.getLongitude() <= 101.094857)) {
-                mCurrentLocation = "LR7";
-            } else if ((location.getLatitude() >= 4.583487 && location.getLatitude() <= 4.583593) && (location.getLongitude() >= 101.094451 && location.getLongitude() <= 101.094516)) {
-                mCurrentLocation = "EL4";
-            } else if ((location.getLatitude() >= 4.583480 && location.getLatitude() <= 4.583588) && (location.getLongitude() >= 101.094517 && location.getLongitude() <= 101.094582)) {
-                mCurrentLocation = "EL3";
-            } else if ((location.getLatitude() >= 4.583474 && location.getLatitude() <= 4.583581) && (location.getLongitude() >= 101.094582 && location.getLongitude() <= 101.094646)) {
-                mCurrentLocation = "EL2";
-            } else if ((location.getLatitude() >= 4.583468 && location.getLatitude() <= 4.583576) && (location.getLongitude() >= 101.094648 && location.getLongitude() <= 101.094714)) {
-                mCurrentLocation = "EL1";
-            } else if ((location.getLatitude() >= 4.583463 && location.getLatitude() <= 4.583570) && (location.getLongitude() >= 101.094713 && location.getLongitude() <= 101.094778)) {
-                mCurrentLocation = "STUDENT LOUNGE";
-            } else if ((location.getLatitude() >= 4.583455 && location.getLatitude() <= 4.583563) && (location.getLongitude() >= 101.094780 && location.getLongitude() <= 101.094843)) {
-                mCurrentLocation = "EXAM DIVISION";
-            }
+        if ((location.getLatitude() >= 4.583344 && location.getLatitude() <= 4.583449) && (location.getLongitude() >= 101.094404 && location.getLongitude() <= 101.094462)) {
+            mCurrentLocation = "CSL4";
+        } else if ((location.getLatitude() >= 4.583339 && location.getLatitude() <= 4.583446) && (location.getLongitude() >= 101.094464 && location.getLongitude() <= 101.094452)) {
+            mCurrentLocation = "CSL3";
+        } else if ((location.getLatitude() >= 4.583334 && location.getLatitude() <= 4.583439) && (location.getLongitude() >= 101.094519 && location.getLongitude() <= 101.094577)) {
+            mCurrentLocation = "CSL2";
+        } else if ((location.getLatitude() >= 4.583329 && location.getLatitude() <= 4.583435) && (location.getLongitude() >= 101.094579 && location.getLongitude() <= 101.094637)) {
+            mCurrentLocation = "DELTA LAB";
+        } else if ((location.getLatitude() >= 4.583314 && location.getLatitude() <= 4.583424) && (location.getLongitude() >= 101.094704 && location.getLongitude() <= 101.094779)) {
+            mCurrentLocation = "LR1";
+        } else if ((location.getLatitude() >= 4.583307 && location.getLatitude() <= 4.583416) && (location.getLongitude() >= 101.094780 && location.getLongitude() <= 101.094857)) {
+            mCurrentLocation = "LR7";
+        } else if ((location.getLatitude() >= 4.583487 && location.getLatitude() <= 4.583593) && (location.getLongitude() >= 101.094451 && location.getLongitude() <= 101.094516)) {
+            mCurrentLocation = "EL4";
+        } else if ((location.getLatitude() >= 4.583480 && location.getLatitude() <= 4.583588) && (location.getLongitude() >= 101.094517 && location.getLongitude() <= 101.094582)) {
+            mCurrentLocation = "EL3";
+        } else if ((location.getLatitude() >= 4.583474 && location.getLatitude() <= 4.583581) && (location.getLongitude() >= 101.094582 && location.getLongitude() <= 101.094646)) {
+            mCurrentLocation = "EL2";
+        } else if ((location.getLatitude() >= 4.583468 && location.getLatitude() <= 4.583576) && (location.getLongitude() >= 101.094648 && location.getLongitude() <= 101.094714)) {
+            mCurrentLocation = "EL1";
+        } else if ((location.getLatitude() >= 4.583463 && location.getLatitude() <= 4.583570) && (location.getLongitude() >= 101.094713 && location.getLongitude() <= 101.094778)) {
+            mCurrentLocation = "STUDENT LOUNGE";
+        } else if ((location.getLatitude() >= 4.583455 && location.getLatitude() <= 4.583563) && (location.getLongitude() >= 101.094780 && location.getLongitude() <= 101.094843)) {
+            mCurrentLocation = "EXAM DIVISION";
         }
         mCurrentFloorLevel = location.hasFloorLevel() ? location.getFloorLevel() : null;
         updateUi();
@@ -188,28 +161,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onEnterRegion(IARegion region) {
-//        log("onEnterRegion: " + regionType(region.getType()) + ", " + region.getId());
     }
 
     @Override
     public void onExitRegion(IARegion region) {
-//        log("onExitRegion: " + regionType(region.getType()) + ", " + region.getId());
-    }
-
-    /**
-     * Turn {@link IARegion#getType()} to human-readable name
-     */
-    private String regionType(int type) {
-        switch (type) {
-            case IARegion.TYPE_UNKNOWN:
-                return "unknown";
-            case IARegion.TYPE_FLOOR_PLAN:
-                return "floor plan";
-            case IARegion.TYPE_VENUE:
-                return "venue";
-            default:
-                return Integer.toString(type);
-        }
     }
 
     @Override
@@ -218,17 +173,6 @@ public class MainActivity extends AppCompatActivity
         savedInstanceState.putFloat(SHORTEST_DISPLACEMENT, mShortestDisplacement);
         super.onSaveInstanceState(savedInstanceState);
     }
-
-    /**
-     * Share current log content using registered apps.
-     */
-//    private void shareLog() {
-//        Intent sendIntent = new Intent()
-//                .setAction(Intent.ACTION_SEND)
-//                .putExtra(Intent.EXTRA_TEXT, mLog.getText())
-//                .setType("text/plain");
-//        startActivity(sendIntent);
-//    }
 
     void updateUi() {
         String status = "";
@@ -268,13 +212,5 @@ public class MainActivity extends AppCompatActivity
         if (!view.getText().toString().equals(text)) {
             view.setText(text);
         }
-    }
-
-    private void log(String msg) {
-        double duration = mRequestStartTime != 0
-                ? (SystemClock.elapsedRealtime() - mRequestStartTime) / 1e3
-                : 0d;
-        mLog.append(String.format(Locale.US, "\n[%06.2f]: %s", duration, msg));
-        mScrollView.smoothScrollBy(0, mLog.getBottom());
     }
 }
