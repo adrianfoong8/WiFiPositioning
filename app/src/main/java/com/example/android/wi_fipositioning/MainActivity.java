@@ -1,7 +1,11 @@
 package com.example.android.wi_fipositioning;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
@@ -19,7 +23,12 @@ public class MainActivity extends AppCompatActivity
 
     static final String FASTEST_INTERVAL = "fastestInterval";
     static final String SHORTEST_DISPLACEMENT = "shortestDisplacement";
-
+    private static final int location_permission = 0;
+    String[] neededPermissions = {
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
     private IALocationManager mLocationManager;
 
     private long mFastestInterval = -1L;
@@ -43,6 +52,8 @@ public class MainActivity extends AppCompatActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ActivityCompat.requestPermissions(MainActivity.this, neededPermissions, location_permission);
+
         if (savedInstanceState != null) {
             mFastestInterval = savedInstanceState.getLong(FASTEST_INTERVAL);
             mShortestDisplacement = savedInstanceState.getFloat(SHORTEST_DISPLACEMENT);
@@ -65,6 +76,23 @@ public class MainActivity extends AppCompatActivity
         mCurrentLocation = "-";
         mCurrentFloorLevel = 0;
         updateUi();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case location_permission: {
+                if (grantResults.length > 0) {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CHANGE_WIFI_STATE) != PackageManager.PERMISSION_GRANTED
+                            || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_WIFI_STATE) != PackageManager.PERMISSION_GRANTED
+                            || ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this, neededPermissions, location_permission);
+                    }
+                }
+                return;
+            }
+        }
     }
 
     @Override
