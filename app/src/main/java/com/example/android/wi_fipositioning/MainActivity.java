@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity
         mCurrentLong = (String.format(Locale.US, "%f", location.getLongitude()));
         if ((location.getLatitude() >= 4.583344 && location.getLatitude() <= 4.583449) && (location.getLongitude() >= 101.094404 && location.getLongitude() <= 101.094462)) {
             mCurrentLocation = "CSL4";
-        } else if ((location.getLatitude() >= 4.583339 && location.getLatitude() <= 4.583446) && (location.getLongitude() >= 101.094464 && location.getLongitude() <= 101.094452)) {
+        } else if ((location.getLatitude() >= 4.583339 && location.getLatitude() <= 4.583446) && (location.getLongitude() >= 101.094464 && location.getLongitude() <= 101.094520)) {
             mCurrentLocation = "CSL3";
         } else if ((location.getLatitude() >= 4.583334 && location.getLatitude() <= 4.583439) && (location.getLongitude() >= 101.094519 && location.getLongitude() <= 101.094577)) {
             mCurrentLocation = "CSL2";
